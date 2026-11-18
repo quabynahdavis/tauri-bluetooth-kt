@@ -4,6 +4,10 @@ Revision history for the documents in this folder.
 
 ## 2026-11-18
 
+Documented one legacy chunked beacon for every Android version from 9 upward.
+
+## 2026-11-18
+
 Documented Android 9 as the minimum version, and the location permission a scan needs on Android 9 through 11.
 
 ## 2026-11-18
