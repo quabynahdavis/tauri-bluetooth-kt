@@ -1,6 +1,5 @@
 package com.attendance.sensors.ble
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -12,7 +11,7 @@ import com.attendance.sensors.Beacon
 import com.attendance.sensors.SensorException
 import com.attendance.sensors.codec.BeaconCodec
 import com.attendance.sensors.requireBluetoothAdapter
-import com.attendance.sensors.requireBluetoothRuntimePermissions
+import com.attendance.sensors.requireScanPermissions
 
 internal class BeaconScanner(private val context: Context) {
     private val lock = Any()
@@ -24,10 +23,7 @@ internal class BeaconScanner(private val context: Context) {
 
     @SuppressLint("MissingPermission")
     fun start(onBeacon: (Beacon) -> Unit) {
-        context.requireBluetoothRuntimePermissions(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT,
-        )
+        context.requireScanPermissions()
         val adapter = context.requireBluetoothAdapter()
         val leScanner = adapter.bluetoothLeScanner
             ?: throw SensorException("Bluetooth LE scanner is unavailable")
@@ -58,7 +54,13 @@ internal class BeaconScanner(private val context: Context) {
         try {
             leScanner.startScan(null, settings, scanCallback)
         } catch (security: SecurityException) {
-            throw SensorException("Missing permission: BLUETOOTH_SCAN, BLUETOOTH_CONNECT")
+            throw SensorException(
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    "Missing permission: BLUETOOTH_SCAN, BLUETOOTH_CONNECT"
+                } else {
+                    "Missing permission: ACCESS_FINE_LOCATION"
+                },
+            )
         }
     }
 

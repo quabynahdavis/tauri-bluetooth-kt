@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Build
 
 internal fun Context.requirePermissions(vararg permissions: String) {
@@ -26,6 +27,26 @@ internal fun Context.requireBluetoothRuntimePermissions(vararg permissions: Stri
     requirePermissions(*permissions)
 }
 
+/**
+ * Android 9 through 11 treat a BLE scan as location. Android 12 and newer use
+ * [Manifest.permission.BLUETOOTH_SCAN] with neverForLocation instead.
+ */
+internal fun Context.requireScanPermissions() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        requireBluetoothRuntimePermissions(
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT,
+        )
+        return
+    }
+    requirePermissions(Manifest.permission.ACCESS_FINE_LOCATION)
+    val location = getSystemService(LocationManager::class.java)
+        ?: throw SensorException("Location services are off")
+    if (!location.isLocationEnabled) {
+        throw SensorException("Location services are off")
+    }
+}
+
 internal fun Context.requireBluetoothAdapter(): BluetoothAdapter {
     requireBluetoothRuntimePermissions(Manifest.permission.BLUETOOTH_CONNECT)
     val manager = getSystemService(BluetoothManager::class.java)
@@ -34,7 +55,13 @@ internal fun Context.requireBluetoothAdapter(): BluetoothAdapter {
     val enabled = try {
         adapter.isEnabled
     } catch (_: SecurityException) {
-        throw SensorException("Missing permission: BLUETOOTH_CONNECT")
+        throw SensorException(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                "Missing permission: BLUETOOTH_CONNECT"
+            } else {
+                "Missing permission: BLUETOOTH"
+            },
+        )
     }
     if (!enabled) throw SensorException("Bluetooth is off")
     return adapter

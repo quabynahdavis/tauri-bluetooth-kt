@@ -127,7 +127,7 @@ internal class BeaconAdvertiser(private val context: Context) {
         try {
             leAdvertiser.startAdvertisingSet(parameters, data, null, null, null, started)
         } catch (security: SecurityException) {
-            throw SensorException("Missing permission: BLUETOOTH_ADVERTISE")
+            throw SensorException("Missing permission: ${advertisePermissionName()}")
         } catch (_: IllegalArgumentException) {
             synchronized(lock) {
                 if (extendedCallback === started) extendedCallback = null
@@ -179,7 +179,7 @@ internal class BeaconAdvertiser(private val context: Context) {
         try {
             leAdvertiser.startAdvertising(settings, manufacturerData(payload), started)
         } catch (security: SecurityException) {
-            throw SensorException("Missing permission: BLUETOOTH_ADVERTISE")
+            throw SensorException("Missing permission: ${advertisePermissionName()}")
         }
         val rotate = Runnable {
             val advanced = synchronized(lock) {
@@ -219,5 +219,13 @@ internal class BeaconAdvertiser(private val context: Context) {
 
     private companion object {
         const val CHUNK_PERIOD_MS = 200L
+
+        fun advertisePermissionName(): String {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                "BLUETOOTH_ADVERTISE"
+            } else {
+                "BLUETOOTH_ADMIN"
+            }
+        }
     }
 }
