@@ -28,4 +28,4 @@ The scanner uses low-latency mode. On API 31 and newer it disables legacy scan r
 - `stopScan` stops the scanner.
 - `latestBeacon` is the latest completed beacon, including its RSSI.
 
-A missing Bluetooth permission throws `SensorException`. The host application is responsible for granting `BLUETOOTH_ADVERTISE`, `BLUETOOTH_SCAN`, and `BLUETOOTH_CONNECT`.
+A missing permission throws `SensorException`. From Android 12 the host grants `BLUETOOTH_ADVERTISE`, `BLUETOOTH_SCAN`, and `BLUETOOTH_CONNECT`. On Android 9 through 11 the host grants `ACCESS_FINE_LOCATION` and leaves location services on. Advertising on those versions uses the install-time `BLUETOOTH` and `BLUETOOTH_ADMIN` permissions.

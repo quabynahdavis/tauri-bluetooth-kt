@@ -1,6 +1,6 @@
 # Setup
 
-`:sensors` is an Android library module. The Android Gradle Plugin is 9.5 and includes Kotlin, so the module is built with that built-in Kotlin support. Gradle is 9.6. `compileSdk` is 37 and `minSdk` is 26. The language target is JDK 17. The machine build uses OpenJDK 25 to run Gradle. OpenJDK 25 is the Gradle runtime, and JDK 17 remains the language target.
+`:sensors` is an Android library module. The Android Gradle Plugin is 9.5 and includes Kotlin, so the module is built with that built-in Kotlin support. Gradle is 9.6. `compileSdk` is 37 and `minSdk` is 28, which is Android 9. The language target is JDK 17. The machine build uses OpenJDK 25 to run Gradle. OpenJDK 25 is the Gradle runtime, and JDK 17 remains the language target.
 
 The namespace is `com.attendance.sensors`.
 
@@ -22,9 +22,10 @@ From `plugins/`, the test command is:
 
 The library manifest declares these permissions:
 
+- `BLUETOOTH`, `BLUETOOTH_ADMIN`, and `ACCESS_FINE_LOCATION`, each with `maxSdkVersion` 30, so they apply on Android 9 through 11 only
 - `BLUETOOTH_ADVERTISE`
-- `BLUETOOTH_SCAN`, with the `neverForLocation` flag
+- `BLUETOOTH_SCAN`, with the `neverForLocation` flag, used from Android 12
 - `BLUETOOTH_CONNECT`
 - `RECORD_AUDIO`
 
-The library lists them. It does not request them. The host application requests them at runtime. If a call needs a permission the host has not granted, the library throws `SensorException`.
+The library lists them. It does not request them. The host application requests the runtime ones. On Android 9 through 11 that includes fine location, and location services have to be turned on or a scan throws `SensorException`. From Android 12 the scan uses `BLUETOOTH_SCAN` and does not ask for location. If a call needs a permission the host has not granted, the library throws `SensorException`.
